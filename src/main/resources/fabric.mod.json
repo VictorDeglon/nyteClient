@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "nyteclient",
+  "version": "${version}",
+  "name": "Nyte Client",
+  "description": "Performance-boosting, QOL-enhancing Fabric client.",
+  "authors": ["Nyte"],
+  "contact": {},
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "client.NyteClientMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "${minecraft_version}",
+    "fabric": "*"
+  }
+}
