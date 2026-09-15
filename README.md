@@ -14,10 +14,20 @@ project's charter if you're extending this.
 | Module | Category | What it does |
 |---|---|---|
 | **Flight** | Movement | Creative-style flight in Survival. Only works if the server allows it — see below. |
+| **Speed** | Movement | Multiplies horizontal movement speed. Real anti-cheat will flag this. |
+| **JumpBoost** | Movement | Higher, longer jumps. Real anti-cheat will flag this. |
+| **AirJump** | Movement | One extra jump mid-air. Real anti-cheat will flag this. |
 | **Hitbox** | Player | Auto-crouches for the smaller (1.5-block) hitbox vanilla already gives you for holding shift. No speed-penalty removal. |
 | **FullBright** | Render | Maxes out gamma so dark areas look lit. |
 | **Zoom** | Render | Hold `C` to narrow the FOV, like a spyglass. |
+| **Xray** | Render | HUD radar listing nearby ores in *already-loaded* chunks — not a wallhack, doesn't need the seed. |
 | **Coordinates** | Render | Draws your XYZ position in the top-left corner. |
+
+`Speed`, `JumpBoost`, and `AirJump` work the same way `Flight` does: they
+only change what your own client reports, a server with real movement
+validation will reject or flag the result, and that's expected — none of
+them try to hide what they're doing. See [AGENTS.md](AGENTS.md) for the
+honest-vs-deceptive line this project draws.
 
 Open the ClickGUI with **Right Shift** (rebindable in Minecraft's controls
 menu, listed under "Nyte Client").

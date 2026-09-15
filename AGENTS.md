@@ -4,10 +4,33 @@
 This repository contains the code for **Nyte Client**, a Fabric mod targeting Minecraft 1.21. The project focuses on client-side movement, player, and render toggles for the author's own server/singleplayer use, controlled from an in-game ClickGUI.
 
 ## Scope
-This is a personal QoL/movement toolkit, not anti-cheat-evasion tooling. Concretely:
-- Modules are simple, honest toggles (fly, hitbox, brightness, zoom, HUD) — not stealth features, not features designed to defeat a specific anti-cheat.
-- Don't add movement-speed hacks (e.g. removing the sneak slowdown), auto-clickers, killaura/aimbot-style combat automation, or timing exploits (e.g. lag-compensated combo automation). If asked to extend this project in that direction, treat it the same way `targetLock_MacePvP` is scoped: a personal practice tool, not something built to beat real anti-cheat on a server the user doesn't control.
-- `Flight` only works if the target server allows it (`allow-flight=true`) or the player already has flight — it doesn't and shouldn't try to defeat the server's own anti-fly check.
+This is a personal QoL/movement toolkit, not anti-cheat-evasion tooling. The
+line isn't "would real anti-cheat catch this?" — several modules here
+(`Flight`, `Speed`, `JumpBoost`, `AirJump`) plainly would, and that's fine.
+The line is **honest vs. deceptive**:
+- OK: a plain, visible toggle that does what its name says, even if a real
+  anti-cheat would flag the resulting movement. It's up to the server
+  operator to allow or reject it — the module doesn't try to hide what it's
+  doing or work around detection.
+- Not OK: anything built specifically to defeat, spoof, or hide from a
+  server's detection (e.g. "make the server think we aren't flying"),
+  auto-clickers, killaura/aimbot-style combat automation, or timing/lag
+  exploits (e.g. automating a combo to land a hit a human couldn't time,
+  or exploiting network latency to bypass a mechanic like shield
+  blocking). If asked to extend this project in that direction, treat it
+  the same way `targetLock_MacePvP` is scoped: a personal practice tool,
+  not something built to beat real anti-cheat on a server the user doesn't
+  control.
+- A feature that can't work as an honest client-side toggle at all (e.g. a
+  damage multiplier — damage is server-computed, a client can't just
+  declare a bigger number) isn't a "make it sneakier" problem, it's a "this
+  needs to be a server-side change instead" answer — point to the relevant
+  vanilla mechanic (attributes, effects, gamerules) instead of building a
+  fake client feature.
+- `Flight` only works if the target server allows it (`allow-flight=true`)
+  or the player already has flight — it doesn't and shouldn't try to defeat
+  the server's own anti-fly check. Same principle for `Speed`/`JumpBoost`/
+  `AirJump`: no packet spoofing, no hiding, just the plain movement change.
 
 ## Layout
 - `src/main/java/client` – entry point (`NyteClientMod`) and the shared `Theme` color palette (see `THEME.md`).

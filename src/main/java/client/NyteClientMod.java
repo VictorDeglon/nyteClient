@@ -3,9 +3,13 @@ package client;
 import net.fabricmc.api.ModInitializer;
 import client.modules.ModuleManager;
 import client.modules.Flight;
+import client.modules.Speed;
+import client.modules.JumpBoost;
+import client.modules.AirJump;
 import client.modules.Hitbox;
 import client.modules.FullBright;
 import client.modules.Zoom;
+import client.modules.Xray;
 import client.modules.CoordinatesHUD;
 import client.utils.ModTickHandler;
 
@@ -25,9 +29,13 @@ public class NyteClientMod implements ModInitializer {
     @Override
     public void onInitialize() {
         MODULES.register(new Flight());
+        MODULES.register(new Speed());
+        MODULES.register(new JumpBoost());
+        MODULES.register(new AirJump());
         MODULES.register(new Hitbox());
         MODULES.register(new FullBright());
         MODULES.register(new Zoom());
+        MODULES.register(new Xray());
         MODULES.register(new CoordinatesHUD());
 
         ModTickHandler.init();

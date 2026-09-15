@@ -268,12 +268,19 @@
   .card .tag {
     display: inline-block;
     margin-top: 10px;
+    margin-right: 6px;
     font-size: 11px;
     color: var(--text-muted);
     background: var(--panel-header);
     border: 1px solid var(--border);
     padding: 2px 8px;
     border-radius: 999px;
+  }
+  /* Flags modules that a real anti-cheat would catch -- see Fair play. */
+  .card .tag.risk {
+    color: #ffb4c4;
+    background: rgba(255,92,122,0.12);
+    border-color: rgba(255,92,122,0.35);
   }
 
   /* ---------- Steps ---------- */
@@ -384,9 +391,9 @@
     <div class="eyebrow"><b>●</b> Fabric mod &middot; Minecraft 1.21</div>
     <h1>A small, honest set of<br><span>client-side tweaks</span> for your server.</h1>
     <p class="lede">
-      Nyte Client is a toggleable Fabric mod — Flight, a smaller hitbox, FullBright,
-      Zoom, and a coordinates HUD — built for your own server or singleplayer world,
-      controlled from an in-game menu.
+      Nyte Client is a toggleable Fabric mod — flight, speed, jump tweaks, a smaller
+      hitbox, an ore radar, and a few render conveniences — built for your own server
+      or singleplayer world, controlled from an in-game menu.
     </p>
     <div class="hero-actions">
       <a class="btn btn-primary" id="download-btn"
@@ -450,6 +457,37 @@
         <h3>Flight</h3>
         <p>Creative-style flight in Survival. Needs <code>allow-flight=true</code> on the server, or it'll get you kicked — see Fair play below.</p>
         <span class="tag">Movement</span>
+        <span class="tag risk">Anti-cheat will flag</span>
+      </div>
+
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg>
+        </div>
+        <h3>Speed</h3>
+        <p>Multiplies horizontal movement speed. Plain and visible — it doesn't try to hide from anti-cheat.</p>
+        <span class="tag">Movement</span>
+        <span class="tag risk">Anti-cheat will flag</span>
+      </div>
+
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg>
+        </div>
+        <h3>JumpBoost</h3>
+        <p>Higher, longer jumps — one multiplier on the normal jump impulse.</p>
+        <span class="tag">Movement</span>
+        <span class="tag risk">Anti-cheat will flag</span>
+      </div>
+
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16l6-6 6 6"/><path d="M6 21l6-6 6 6"/></svg>
+        </div>
+        <h3>AirJump</h3>
+        <p>One extra jump mid-air, reset the moment you touch ground.</p>
+        <span class="tag">Movement</span>
+        <span class="tag risk">Anti-cheat will flag</span>
       </div>
 
       <div class="card">
@@ -476,6 +514,15 @@
         </div>
         <h3>Zoom</h3>
         <p>Hold <code>C</code> to narrow the FOV, like looking through a spyglass — pure convenience, no gameplay effect.</p>
+        <span class="tag">Render</span>
+      </div>
+
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9Z"/><path d="M2 9h20M9 3l-2 6 5 12 5-12-2-6"/></svg>
+        </div>
+        <h3>Xray</h3>
+        <p>HUD radar for nearby ores in chunks you've already loaded. Not a wallhack — no seed, no see-through rendering.</p>
         <span class="tag">Render</span>
       </div>
 
@@ -547,8 +594,9 @@
       </div>
       <div>
         <h4>This is a personal-server toolkit, not an anti-cheat bypass</h4>
-        <p>Every module here is a plain, visible toggle — nothing is built to defeat a specific anti-cheat or hide from server admins. Use it on your own server or in singleplayer.</p>
-        <p><b>Flight</b> specifically only works if the server allows it: set <code>allow-flight=true</code> in <code>server.properties</code>, or the player needs flight some other way. Without that, vanilla's own anti-fly check will kick you after a few seconds airborne — that's expected, and this mod doesn't try to get around it.</p>
+        <p>Every module here is a plain, visible toggle — nothing is built to defeat, spoof, or hide from a server's anti-cheat. The movement modules (<b>Flight</b>, <b>Speed</b>, <b>JumpBoost</b>, <b>AirJump</b>) will get flagged by any server running real movement validation, and that's fine — it's up to the server operator to allow them, not this mod's job to sneak past detection.</p>
+        <p><b>Flight</b> specifically needs <code>allow-flight=true</code> in <code>server.properties</code>, or the player needs flight some other way. Without that, vanilla's own anti-fly check will kick you after a few seconds airborne.</p>
+        <p><b>Xray</b> is the one module here that isn't a "cheat" in the usual sense — it only reads block data your client already has for loaded chunks, the same way any resource pack or F3 debug screen does. No seed, no server interaction, no wallhack rendering.</p>
       </div>
     </div>
   </div>
