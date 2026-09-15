@@ -18,4 +18,13 @@ public interface Module {
 
     /** Called once per client tick while the module is enabled. */
     void onTick();
+
+    /**
+     * True for a roadmap entry that isn't implemented yet ({@link PlaceholderModule}).
+     * The ClickGUI renders these greyed out and ignores clicks on them, so the full
+     * planned feature set stays visible without pretending any of it works.
+     */
+    default boolean isPlaceholder() {
+        return false;
+    }
 }

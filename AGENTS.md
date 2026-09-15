@@ -32,20 +32,38 @@ The line is **honest vs. deceptive**:
   the server's own anti-fly check. Same principle for `Speed`/`JumpBoost`/
   `AirJump`: no packet spoofing, no hiding, just the plain movement change.
 
+## Pace: one real feature at a time, verified
+This project's owner can't run the game to test changes live — every module
+here is verified by (a) `./gradlew build` actually succeeding, and (b) their
+own in-game testing after a release, which surfaces real bugs (the ClickGUI
+redesign and the Crosshair size fix both came from that loop). Given that,
+don't pile many new, untested subsystems into one pass on top of an open bug
+report — fix known bugs first, then add **one** new fully-working feature,
+even when a broader spec asks for much more at once. Everything from a
+larger spec that isn't being built this pass belongs in `ROADMAP.md` and, if
+it's a nameable feature, a `PlaceholderModule` entry (greyed out, "SOON",
+not clickable) in `NyteClientMod.registerRoadmapPlaceholders()` — so the
+full scope stays visible without any of it pretending to work. When a
+placeholder gets built for real, delete its `PlaceholderModule` entry in the
+same commit; never leave a feature registered as both.
+
 ## Layout
 - `src/main/java/client` – entry point (`NyteClientMod`) and the shared `Theme` color palette (see `THEME.md`).
-- `src/main/java/client/modules` – one class per feature, all extending `ModuleBase`.
-- `src/main/java/client/gui` – `ClickGui`, the in-game panel UI.
+- `src/main/java/client/modules` – one class per feature, all extending `ModuleBase` (except `PlaceholderModule`, which implements `Module` directly — see `ROADMAP.md`).
+- `src/main/java/client/waypoints` – `Waypoint` data class and `WaypointStore` (Gson-backed JSON persistence).
+- `src/main/java/client/mixin` – Mixins, registered via `nyteclient.mixins.json`.
+- `src/main/java/client/gui` – `ClickGui`, the in-game panel UI, and `BlurSuppressor`.
 - `src/main/java/client/utils` – tick/keybind plumbing.
 - `src/main/resources` – resources such as `fabric.mod.json`.
-- `build.gradle`, `gradle.properties`, `settings.gradle` – Gradle build configuration (no wrapper script is included).
+- `build.gradle`, `gradle.properties`, `settings.gradle` – Gradle build configuration.
+- `gradlew`/`gradlew.bat`/`gradle/` – Gradle wrapper pinned to 8.8 (Loom 1.6.x doesn't support Gradle 9+).
 
 ## Building
-1. Ensure **Java 17+** and **Gradle** are available on the command line.
-2. Run `gradle build` from the repository root.
+1. Ensure a **Java 21** JDK is available (Loom needs it to set up the Minecraft toolchain, even though the mod compiles to Java 17 bytecode).
+2. Run `JAVA_HOME="$(/usr/libexec/java_home -v 21)" ./gradlew build` from the repository root (use the checked-in wrapper, not a system `gradle` — see README's Building section for why).
 3. The built mod JAR can be found in `build/libs`.
 
-There are currently no automated tests, so a successful build verifies compilation.
+There are currently no automated tests, so a successful build verifies compilation — always run this before saying a change works.
 
 ## Java Style Guidelines
 - Use **4 spaces** for indentation (no tabs).

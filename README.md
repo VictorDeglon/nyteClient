@@ -8,6 +8,7 @@ project's charter if you're extending this.
 
 **[Download / landing page →](https://victordeglon.github.io/nyteClient/)**
 &middot; **[Latest release](https://github.com/VictorDeglon/nyteClient/releases/latest)**
+&middot; **[Roadmap](ROADMAP.md)**
 
 ## Modules
 
@@ -23,6 +24,13 @@ project's charter if you're extending this.
 | **Xray** | Render | HUD radar listing nearby ores in *already-loaded* chunks — not a wallhack, doesn't need the seed. |
 | **Crosshair** | Render | Replaces the vanilla crosshair with a themed one (via a Mixin that suppresses `InGameHud`'s own crosshair render pass). |
 | **Coordinates** | Render | Draws your XYZ position in the top-left corner. |
+| **Waypoints** | World | Press `B` to drop a waypoint at your feet; auto-marks your last death. HUD shows an arrow, name, and distance to the nearest one in your dimension. Persisted to `config/nyteclient/waypoints.json`. |
+
+The ClickGUI also lists ~16 planned features (Command Center search,
+Notification Center, Block/Entity Inspector, Session Statistics, and more)
+greyed out with a **SOON** pill — visible so the full scope is honest about
+what's built vs. planned, but not clickable. See [`ROADMAP.md`](ROADMAP.md)
+for the full list against the original feature spec.
 
 The ClickGUI header has a small swatch button (top-right) that cycles three
 color presets — Violet, Crimson, Teal — all defined in
@@ -76,6 +84,22 @@ Flight to actually work there instead of getting you kicked.
   [`nyteclient.mixins.json`](src/main/resources/nyteclient.mixins.json).
   Suppresses vanilla's crosshair render pass when `Crosshair` is enabled.
   If you add another Mixin, list it in that same file's `"client"` array.
+- [`PlaceholderModule`](src/main/java/client/modules/PlaceholderModule.java) —
+  a roadmap entry: implements `Module` directly (not `ModuleBase`), always
+  reports disabled, and `toggle()` is a no-op. The ClickGUI renders these
+  greyed out with a **SOON** pill and ignores clicks on them. See
+  [`ROADMAP.md`](ROADMAP.md) for the full planned feature set this backs.
+- [`client.waypoints`](src/main/java/client/waypoints/) — `Waypoint` (plain
+  data) and `WaypointStore` (Gson-backed JSON persistence under
+  `config/nyteclient/`). Gson is already on the classpath as one of
+  Minecraft's own library dependencies, not something this project added.
+- [`BlurSuppressor`](src/main/java/client/gui/BlurSuppressor.java) — reflectively
+  finds and zeroes any `SimpleOption` field on `GameOptions` whose name
+  contains "blur" while `ClickGui` is open, then restores it on close. The
+  exact 1.21 build this compiles against has no such option at all, but a
+  later Minecraft point release might, and `fabric.mod.json` accepts any
+  `~1.21` patch — this is a no-op on versions without the field rather than
+  a hard-coded guess at its name.
 
 ## Adding a new module
 

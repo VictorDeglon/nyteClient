@@ -38,6 +38,18 @@ public class ClickGui extends Screen {
     }
 
     @Override
+    protected void init() {
+        super.init();
+        BlurSuppressor.suppress();
+    }
+
+    @Override
+    public void removed() {
+        BlurSuppressor.restore();
+        super.removed();
+    }
+
+    @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         List<Module> modules = NyteClientMod.MODULES.getByCategory(selectedCategory);
 
@@ -135,13 +147,19 @@ public class ClickGui extends Screen {
         for (int i = 0; i < modules.size(); i++) {
             Module module = modules.get(i);
             int y = listY + i * ROW_HEIGHT;
-            boolean hovered = isHovering(mouseX, mouseY, listX, y, listWidth, ROW_HEIGHT);
+            boolean placeholder = module.isPlaceholder();
+            boolean hovered = !placeholder && isHovering(mouseX, mouseY, listX, y, listWidth, ROW_HEIGHT);
 
             if (hovered) {
                 context.fill(listX, y, listX + listWidth, y + ROW_HEIGHT, Theme.PANEL_HEADER);
             }
             if (i > 0) {
                 context.fill(listX, y, listX + listWidth, y + 1, Theme.BORDER);
+            }
+
+            if (placeholder) {
+                renderPlaceholderRow(context, module, listX, y, listWidth);
+                continue;
             }
 
             boolean enabled = module.isEnabled();
@@ -160,6 +178,21 @@ public class ClickGui extends Screen {
             context.drawTextWithShadow(textRenderer, module.getName(), listX + 12, y + 7, textColor);
             context.drawTextWithShadow(textRenderer, module.getDescription(), listX + 12, y + 21, Theme.TEXT_MUTED);
         }
+    }
+
+    /** A roadmap entry: dimmed name, a "SOON" pill instead of ON/OFF, no hover highlight (it isn't clickable). */
+    private void renderPlaceholderRow(DrawContext context, Module module, int listX, int y, int listWidth) {
+        String stateText = "SOON";
+        int stateWidth = textRenderer.getWidth(stateText);
+        int statePillWidth = stateWidth + 12;
+        int stateX = listX + listWidth - statePillWidth - 14;
+        int stateY = y + ROW_HEIGHT / 2 - 7;
+        context.fill(stateX, stateY, stateX + statePillWidth, stateY + 14, Theme.PANEL);
+        context.drawBorder(stateX, stateY, statePillWidth, 14, Theme.DISABLED);
+        context.drawTextWithShadow(textRenderer, stateText, stateX + 6, stateY + 3, Theme.DISABLED);
+
+        context.drawTextWithShadow(textRenderer, module.getName(), listX + 12, y + 7, Theme.DISABLED);
+        context.drawTextWithShadow(textRenderer, module.getDescription(), listX + 12, y + 21, Theme.DISABLED);
     }
 
     @Override
@@ -194,7 +227,11 @@ public class ClickGui extends Screen {
         int listWidth = panelWidth - SIDEBAR_WIDTH;
         for (int i = 0; i < modules.size(); i++) {
             if (isHovering(mouseX, mouseY, listX, bodyTop + i * ROW_HEIGHT, listWidth, ROW_HEIGHT)) {
-                modules.get(i).toggle();
+                // Placeholder rows consume the click (so it doesn't fall through to whatever
+                // is behind the panel) but don't toggle -- there's nothing to turn on yet.
+                if (!modules.get(i).isPlaceholder()) {
+                    modules.get(i).toggle();
+                }
                 return true;
             }
         }
