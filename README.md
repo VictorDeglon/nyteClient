@@ -35,7 +35,13 @@ them try to hide what they're doing. See [AGENTS.md](AGENTS.md) for the
 honest-vs-deceptive line this project draws.
 
 Open the ClickGUI with **Right Shift** (rebindable in Minecraft's controls
-menu, listed under "Nyte Client").
+menu, listed under "Nyte Client"). The panel is a sidebar of categories on
+the left and a spacious module list on the right — each row shows the
+module's name, its description, and an explicit **ON/OFF** pill, not just
+a small dot. Every toggle also posts an action-bar confirmation
+("Flight: ON" in green / "Flight: OFF" in red) so a click always gives
+immediate feedback, independent of whether the module's own effect is
+easy to see or the server ends up rejecting it.
 
 ### A note on Flight
 

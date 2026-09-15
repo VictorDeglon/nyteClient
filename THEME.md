@@ -29,7 +29,7 @@ no conversion needed at the call site.
 
 | Token | Value | Swatch | Used for |
 |---|---|---|---|
-| `BACKGROUND` | `#F00D0B12` | near-black, ~94% opaque | Full-screen dim behind the panel |
+| `BACKGROUND` | `#FF0D0B12` | near-black, fully opaque | Full-screen dim behind the panel |
 | `PANEL` | `#F0191622` | very dark violet-grey | Panel body, module list background |
 | `PANEL_HEADER` | `#FF241F30` | dark violet-grey | Header strip, hovered-row fill |
 | `BORDER` | `#33FFFFFF` | white, ~20% opaque | 1px panel outline |
@@ -61,11 +61,11 @@ no conversion needed at the call site.
 4. **No pure black/white.** Backgrounds lean dark-violet rather than `#000`,
    and text leans off-white rather than `#FFF`, which reads as less harsh
    against Minecraft's own lighting.
-5. **`BACKGROUND` stays close to opaque.** `ClickGui.shouldPause()` returns
-   `false` (the world keeps animating behind the panel, by design), so a
-   strongly translucent overlay lets that motion show through and reads as
-   a blur rather than a dim. Keep `BACKGROUND`'s alpha near `PANEL`'s
-   (`0xF0`) in any new preset.
+5. **`BACKGROUND` is fully opaque.** `ClickGui.shouldPause()` returns
+   `false` (the world keeps animating behind the panel, by design), so any
+   translucency at all lets that motion bleed through and reads as a blur
+   rather than a dim — a partial-opacity `BACKGROUND` still did this. Keep
+   `BACKGROUND` at `0xFF` alpha in any new preset.
 
 ## Changing the theme
 

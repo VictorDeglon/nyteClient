@@ -65,13 +65,15 @@ public final class Theme {
     }
 
     private static void apply(Preset preset) {
-        // BACKGROUND is intentionally close to fully opaque (0xF0, matching
-        // PANEL) rather than strongly translucent: with the world still
-        // animating behind the ClickGUI (see ClickGui#shouldPause), a very
-        // see-through overlay reads as a motion blur rather than a dim.
+        // BACKGROUND is fully opaque (0xFF), not translucent: with the world
+        // still animating behind the ClickGUI (see ClickGui#shouldPause), any
+        // see-through overlay reads as a motion blur rather than a dim. A
+        // partial-opacity version of this looked better but still let motion
+        // bleed through -- full opacity is the version that actually settles
+        // the reported blur.
         switch (preset) {
             case CRIMSON -> {
-                BACKGROUND = 0xF0120A0D;
+                BACKGROUND = 0xFF120A0D;
                 PANEL = 0xF0221419;
                 PANEL_HEADER = 0xFF301B22;
                 BORDER = 0x33FFFFFF;
@@ -86,7 +88,7 @@ public final class Theme {
                 TEXT_ON_ACCENT = 0xFF140B0D;
             }
             case TEAL -> {
-                BACKGROUND = 0xF00A1212;
+                BACKGROUND = 0xFF0A1212;
                 PANEL = 0xF0142120;
                 PANEL_HEADER = 0xFF1B302D;
                 BORDER = 0x33FFFFFF;
@@ -101,7 +103,7 @@ public final class Theme {
                 TEXT_ON_ACCENT = 0xFF0B1413;
             }
             case VIOLET -> {
-                BACKGROUND = 0xF00D0B12;
+                BACKGROUND = 0xFF0D0B12;
                 PANEL = 0xF0191622;
                 PANEL_HEADER = 0xFF241F30;
                 BORDER = 0x33FFFFFF;

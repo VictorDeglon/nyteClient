@@ -11,8 +11,10 @@ import net.minecraft.text.Text;
 import java.util.List;
 
 /**
- * The mod's ClickGUI: a category tab strip on the left, a module list on
- * the right, and a hover tooltip showing each module's description.
+ * The mod's ClickGUI: a category sidebar on the left, a spacious module
+ * list on the right (name + description on their own lines, plus an
+ * ON/OFF label -- not just a small color dot, since "I can't tell what I'm
+ * enabling" was the direct feedback that drove this layout).
  *
  * <p>Every color used here comes from {@link Theme} -- see {@code THEME.md}
  * in the repo root for the palette reference and rationale. Everything is
@@ -20,12 +22,14 @@ import java.util.List;
  * {@code ButtonWidget}s so the whole panel can share one consistent look.
  */
 public class ClickGui extends Screen {
-    private static final int PANEL_WIDTH = 260;
-    private static final int TAB_WIDTH = 90;
-    private static final int ROW_HEIGHT = 20;
-    private static final int HEADER_HEIGHT = 18;
-    private static final int SWATCH_SIZE = 10;
-    private static final int SWATCH_MARGIN = 6;
+    private static final int SIDEBAR_WIDTH = 150;
+    private static final int HEADER_HEIGHT = 30;
+    private static final int TAB_HEIGHT = 30;
+    private static final int ROW_HEIGHT = 40;
+    private static final int SWATCH_SIZE = 12;
+    private static final int SWATCH_MARGIN = 10;
+    /** Content area always reserves room for at least this many rows, so a small category doesn't look cramped. */
+    private static final int MIN_VISIBLE_ROWS = 6;
 
     private Category selectedCategory = Category.MOVEMENT;
 
@@ -36,35 +40,47 @@ public class ClickGui extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         List<Module> modules = NyteClientMod.MODULES.getByCategory(selectedCategory);
-        int rowCount = Math.max(modules.size(), Category.values().length);
-        int panelHeight = HEADER_HEIGHT + rowCount * ROW_HEIGHT;
-        int panelX = (width - PANEL_WIDTH) / 2;
-        int panelY = (height - panelHeight) / 2;
-        int listX = panelX + TAB_WIDTH;
-        int listWidth = PANEL_WIDTH - TAB_WIDTH;
-        int rowsTop = panelY + HEADER_HEIGHT;
 
-        // Dim the game behind the panel.
+        int panelWidth = Math.min(width - 40, 620);
+        int contentRows = Math.max(modules.size(), MIN_VISIBLE_ROWS);
+        int panelHeight = Math.min(height - 40, HEADER_HEIGHT + contentRows * ROW_HEIGHT);
+        int panelX = (width - panelWidth) / 2;
+        int panelY = (height - panelHeight) / 2;
+
+        int sidebarX = panelX;
+        int contentX = panelX + SIDEBAR_WIDTH;
+        int contentWidth = panelWidth - SIDEBAR_WIDTH;
+        int bodyTop = panelY + HEADER_HEIGHT;
+        int bodyHeight = panelHeight - HEADER_HEIGHT;
+
+        // Full-screen backdrop -- opaque, since the world keeps animating
+        // behind this panel (shouldPause() is false) and any translucency
+        // here lets that motion bleed through and read as a blur.
         context.fill(0, 0, width, height, Theme.BACKGROUND);
 
         // Panel body + border.
-        context.fill(panelX, panelY, panelX + PANEL_WIDTH, panelY + panelHeight, Theme.PANEL);
-        context.drawBorder(panelX, panelY, PANEL_WIDTH, panelHeight, Theme.BORDER);
+        context.fill(panelX, panelY, panelX + panelWidth, panelY + panelHeight, Theme.PANEL);
+        context.drawBorder(panelX, panelY, panelWidth, panelHeight, Theme.BORDER);
 
         // Header bar.
-        context.fill(panelX, panelY, panelX + PANEL_WIDTH, panelY + HEADER_HEIGHT, Theme.PANEL_HEADER);
-        context.drawTextWithShadow(textRenderer, "NYTE CLIENT", panelX + 8, panelY + 5, Theme.TEXT_PRIMARY);
-        renderThemeSwatch(context, panelX, panelY, mouseX, mouseY);
+        context.fill(panelX, panelY, panelX + panelWidth, panelY + HEADER_HEIGHT, Theme.PANEL_HEADER);
+        context.drawTextWithShadow(textRenderer, "NYTE CLIENT", panelX + 12, panelY + 11, Theme.TEXT_PRIMARY);
+        renderThemeSwatch(context, panelX, panelWidth, panelY, mouseX, mouseY);
 
-        renderTabs(context, panelX, rowsTop, mouseX, mouseY);
-        renderModuleList(context, modules, listX, rowsTop, listWidth, mouseX, mouseY);
+        // Sidebar / content divider.
+        context.fill(sidebarX + SIDEBAR_WIDTH, bodyTop, sidebarX + SIDEBAR_WIDTH + 1, panelY + panelHeight,
+                Theme.BORDER);
+
+        renderSidebar(context, sidebarX, bodyTop, bodyHeight, mouseX, mouseY);
+        renderModuleList(context, modules, contentX, bodyTop, contentWidth, mouseX, mouseY);
 
         super.render(context, mouseX, mouseY, delta);
     }
 
-    /** Small clickable square in the header that cycles {@link Theme.Preset}. */
-    private void renderThemeSwatch(DrawContext context, int panelX, int panelY, int mouseX, int mouseY) {
-        int[] rect = themeSwatchRect(panelX, panelY);
+    /** Clickable square in the header that cycles {@link Theme.Preset}. */
+    private void renderThemeSwatch(DrawContext context, int panelX, int panelWidth, int panelY, int mouseX,
+            int mouseY) {
+        int[] rect = themeSwatchRect(panelX, panelWidth, panelY);
         boolean hovered = isHovering(mouseX, mouseY, rect[0], rect[1], SWATCH_SIZE, SWATCH_SIZE);
         context.fill(rect[0], rect[1], rect[0] + SWATCH_SIZE, rect[1] + SWATCH_SIZE, Theme.ACCENT);
         context.drawBorder(rect[0], rect[1], SWATCH_SIZE, SWATCH_SIZE, Theme.BORDER);
@@ -74,31 +90,46 @@ public class ClickGui extends Screen {
         }
     }
 
-    private int[] themeSwatchRect(int panelX, int panelY) {
-        int x = panelX + PANEL_WIDTH - SWATCH_SIZE - SWATCH_MARGIN;
+    private int[] themeSwatchRect(int panelX, int panelWidth, int panelY) {
+        int x = panelX + panelWidth - SWATCH_SIZE - SWATCH_MARGIN;
         int y = panelY + (HEADER_HEIGHT - SWATCH_SIZE) / 2;
         return new int[] {x, y};
     }
 
-    private void renderTabs(DrawContext context, int tabX, int tabY, int mouseX, int mouseY) {
+    /** Category list down the left side, one full-width row per category with a module count. */
+    private void renderSidebar(DrawContext context, int sidebarX, int bodyTop, int bodyHeight, int mouseX,
+            int mouseY) {
         Category[] categories = Category.values();
         for (int i = 0; i < categories.length; i++) {
             Category category = categories[i];
-            int y = tabY + i * ROW_HEIGHT;
+            int y = bodyTop + i * TAB_HEIGHT;
             boolean selected = category == selectedCategory;
-            boolean hovered = isHovering(mouseX, mouseY, tabX, y, TAB_WIDTH, ROW_HEIGHT);
+            boolean hovered = isHovering(mouseX, mouseY, sidebarX, y, SIDEBAR_WIDTH, TAB_HEIGHT);
 
             int background = selected ? Theme.ACCENT_MUTED : hovered ? Theme.PANEL_HEADER : Theme.PANEL;
-            context.fill(tabX, y, tabX + TAB_WIDTH, y + ROW_HEIGHT, background);
+            context.fill(sidebarX, y, sidebarX + SIDEBAR_WIDTH, y + TAB_HEIGHT, background);
             if (selected) {
-                context.fill(tabX, y, tabX + 2, y + ROW_HEIGHT, Theme.ACCENT);
+                context.fill(sidebarX, y, sidebarX + 3, y + TAB_HEIGHT, Theme.ACCENT);
             }
 
             int textColor = selected ? Theme.TEXT_PRIMARY : Theme.TEXT_MUTED;
-            context.drawTextWithShadow(textRenderer, category.getLabel(), tabX + 8, y + 6, textColor);
+            context.drawTextWithShadow(textRenderer, category.getLabel(), sidebarX + 14, y + 11, textColor);
+
+            int count = NyteClientMod.MODULES.getByCategory(category).size();
+            String countText = String.valueOf(count);
+            int countWidth = textRenderer.getWidth(countText);
+            context.drawTextWithShadow(textRenderer, countText, sidebarX + SIDEBAR_WIDTH - countWidth - 12, y + 11,
+                    Theme.TEXT_MUTED);
+        }
+
+        // Fill any leftover sidebar height below the last category so the divider/border reads as one solid column.
+        int usedHeight = categories.length * TAB_HEIGHT;
+        if (usedHeight < bodyHeight) {
+            context.fill(sidebarX, bodyTop + usedHeight, sidebarX + SIDEBAR_WIDTH, bodyTop + bodyHeight, Theme.PANEL);
         }
     }
 
+    /** Module rows: name + description on their own lines, plus an explicit ON/OFF label -- not just a dot. */
     private void renderModuleList(DrawContext context, List<Module> modules, int listX, int listY, int listWidth,
             int mouseX, int mouseY) {
         for (int i = 0; i < modules.size(); i++) {
@@ -109,16 +140,25 @@ public class ClickGui extends Screen {
             if (hovered) {
                 context.fill(listX, y, listX + listWidth, y + ROW_HEIGHT, Theme.PANEL_HEADER);
             }
-
-            int dotColor = module.isEnabled() ? Theme.ENABLED : Theme.DISABLED;
-            context.fill(listX + 6, y + 8, listX + 10, y + 12, dotColor);
-
-            int textColor = module.isEnabled() ? Theme.TEXT_PRIMARY : Theme.TEXT_MUTED;
-            context.drawTextWithShadow(textRenderer, module.getName(), listX + 16, y + 6, textColor);
-
-            if (hovered) {
-                context.drawTooltip(textRenderer, Text.literal(module.getDescription()), mouseX, mouseY);
+            if (i > 0) {
+                context.fill(listX, y, listX + listWidth, y + 1, Theme.BORDER);
             }
+
+            boolean enabled = module.isEnabled();
+            String stateText = enabled ? "ON" : "OFF";
+            int stateColor = enabled ? Theme.ENABLED : Theme.DISABLED;
+            int stateWidth = textRenderer.getWidth(stateText);
+            int statePillWidth = stateWidth + 12;
+            int stateX = listX + listWidth - statePillWidth - 14;
+            int stateY = y + ROW_HEIGHT / 2 - 7;
+            context.fill(stateX, stateY, stateX + statePillWidth, stateY + 14, enabled ? stateColor : Theme.PANEL);
+            context.drawBorder(stateX, stateY, statePillWidth, 14, stateColor);
+            context.drawTextWithShadow(textRenderer, stateText, stateX + 6, stateY + 3,
+                    enabled ? Theme.TEXT_ON_ACCENT : stateColor);
+
+            int textColor = enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_MUTED;
+            context.drawTextWithShadow(textRenderer, module.getName(), listX + 12, y + 7, textColor);
+            context.drawTextWithShadow(textRenderer, module.getDescription(), listX + 12, y + 21, Theme.TEXT_MUTED);
         }
     }
 
@@ -129,13 +169,14 @@ public class ClickGui extends Screen {
         }
 
         List<Module> modules = NyteClientMod.MODULES.getByCategory(selectedCategory);
-        int rowCount = Math.max(modules.size(), Category.values().length);
-        int panelHeight = HEADER_HEIGHT + rowCount * ROW_HEIGHT;
-        int panelX = (width - PANEL_WIDTH) / 2;
+        int panelWidth = Math.min(width - 40, 620);
+        int contentRows = Math.max(modules.size(), MIN_VISIBLE_ROWS);
+        int panelHeight = Math.min(height - 40, HEADER_HEIGHT + contentRows * ROW_HEIGHT);
+        int panelX = (width - panelWidth) / 2;
         int panelY = (height - panelHeight) / 2;
-        int rowsTop = panelY + HEADER_HEIGHT;
+        int bodyTop = panelY + HEADER_HEIGHT;
 
-        int[] swatch = themeSwatchRect(panelX, panelY);
+        int[] swatch = themeSwatchRect(panelX, panelWidth, panelY);
         if (isHovering(mouseX, mouseY, swatch[0], swatch[1], SWATCH_SIZE, SWATCH_SIZE)) {
             Theme.cyclePreset();
             return true;
@@ -143,16 +184,16 @@ public class ClickGui extends Screen {
 
         Category[] categories = Category.values();
         for (int i = 0; i < categories.length; i++) {
-            if (isHovering(mouseX, mouseY, panelX, rowsTop + i * ROW_HEIGHT, TAB_WIDTH, ROW_HEIGHT)) {
+            if (isHovering(mouseX, mouseY, panelX, bodyTop + i * TAB_HEIGHT, SIDEBAR_WIDTH, TAB_HEIGHT)) {
                 selectedCategory = categories[i];
                 return true;
             }
         }
 
-        int listX = panelX + TAB_WIDTH;
-        int listWidth = PANEL_WIDTH - TAB_WIDTH;
+        int listX = panelX + SIDEBAR_WIDTH;
+        int listWidth = panelWidth - SIDEBAR_WIDTH;
         for (int i = 0; i < modules.size(); i++) {
-            if (isHovering(mouseX, mouseY, listX, rowsTop + i * ROW_HEIGHT, listWidth, ROW_HEIGHT)) {
+            if (isHovering(mouseX, mouseY, listX, bodyTop + i * ROW_HEIGHT, listWidth, ROW_HEIGHT)) {
                 modules.get(i).toggle();
                 return true;
             }
