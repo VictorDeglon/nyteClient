@@ -6,6 +6,9 @@ ClickGUI. **Scope on purpose:** these are QoL/movement toggles, not
 anti-cheat-evading combat automation — see [AGENTS.md](AGENTS.md) for the
 project's charter if you're extending this.
 
+**[Download / landing page →](https://victordeglon.github.io/nyteClient/)**
+&middot; **[Latest release](https://github.com/VictorDeglon/nyteClient/releases/latest)**
+
 ## Modules
 
 | Module | Category | What it does |
@@ -61,19 +64,40 @@ code to touch.
 
 ## Building
 
-1. Ensure Java 17+ and Gradle are available (no wrapper is checked in yet —
-   see [AGENTS.md](AGENTS.md)).
-2. Run `gradle build` from the repo root.
-3. The built mod JAR will be in `build/libs`.
+A Gradle wrapper pinned to **8.8** is checked in (Loom 1.6.x doesn't support
+Gradle 9+). Fabric Loom needs a **Java 21** runtime to set up the Minecraft
+toolchain even though the mod itself compiles for Java 17 bytecode.
 
-**Note:** this rewrite hasn't been build-verified in this session — no
-JDK/Gradle was available in the sandbox it was written in. Run a build
-before relying on it.
+```bash
+JAVA_HOME="$(/usr/libexec/java_home -v 21)" ./gradlew build
+```
+
+The built mod JAR will be in `build/libs/nyteclient-<version>.jar`. Verified
+working with a clean `./gradlew build` against Temurin/Homebrew OpenJDK 21.
 
 ## Target Minecraft version
 
-`gradle.properties` currently targets **1.21** (the version already
-configured in this repo). If you're on a newer release, update
-`minecraft_version`, `yarn_mappings`, and `fabric_version` there to match —
-check [fabricmc.net](https://fabricmc.net/develop/) for the current values
-for your target version.
+`gradle.properties` currently targets **1.21**. If you're on a newer
+release, update `minecraft_version`, `yarn_mappings`, and `fabric_version`
+there to match — check [fabricmc.net](https://fabricmc.net/develop/) for
+current values, and confirm the exact `fabric_version` string exists at
+`https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/maven-metadata.xml`
+before building (a stale/guessed version was the first build failure here).
+
+## Releasing
+
+Pushing a tag matching `v*` triggers
+[`.github/workflows/release.yml`](.github/workflows/release.yml), which
+builds the jar and publishes a GitHub Release with it attached (plus a
+stable-named `nyteclient-latest.jar` copy that the landing page always
+links to). To cut a release:
+
+```bash
+# bump mod_version in gradle.properties, commit it, then:
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+The landing page in [`docs/`](docs/index.html) (served via GitHub Pages)
+pulls the latest release info live from the GitHub API, so it stays current
+automatically — no site edits needed per release.
