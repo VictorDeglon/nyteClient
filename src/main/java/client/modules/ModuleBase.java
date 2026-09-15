@@ -1,48 +1,63 @@
-/**
- * Base class for toggleable modules.
- * Handles enabling and disabling logic so child classes only need
- * to implement their specific behavior.
- */
 package client.modules;
 
+/**
+ * Boilerplate for a toggleable module: name/description/category storage,
+ * the enabled flag, and enable/disable callback plumbing. Subclasses only
+ * need to override {@link #onEnable()}, {@link #onDisable()} and/or
+ * {@link #onTick()} for whatever behavior they add.
+ */
 public abstract class ModuleBase implements Module {
-    /** Indicates whether the module is currently active. */
-    private boolean enabled = false;
+    private final String name;
+    private final String description;
+    private final Category category;
+    private boolean enabled;
+
+    protected ModuleBase(String name, String description, Category category) {
+        this.name = name;
+        this.description = description;
+        this.category = category;
+    }
 
     @Override
-    /**
-     * Toggles the active state of this module and calls the appropriate hooks.
-     */
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public Category getCategory() {
+        return category;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
     public void toggle() {
-        // Flip the enabled flag
         enabled = !enabled;
-        // Invoke hooks depending on the new state
         if (enabled) {
-            // Trigger enable callback
             onEnable();
         } else {
-            // Trigger disable callback
             onDisable();
         }
     }
 
     @Override
-    /**
-     * Returns whether the module is currently enabled.
-     */
-    public boolean isEnabled() {
-        // Expose the internal enabled flag
-        return enabled;
+    public void onTick() {
+        // No-op by default; only modules that need per-tick work override this.
     }
 
-    /**
-     * Called when the module is enabled.
-     * Subclasses should override to implement behavior.
-     */
-    protected void onEnable() {}
-    /**
-     * Called when the module is disabled.
-     * Subclasses should override to undo their enable actions.
-     */
-    protected void onDisable() {}
+    /** Runs once when the module is switched on. */
+    protected void onEnable() {
+    }
+
+    /** Runs once when the module is switched off; undo whatever onEnable() changed. */
+    protected void onDisable() {
+    }
 }

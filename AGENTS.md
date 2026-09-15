@@ -1,10 +1,19 @@
 # Instructions for Nyte Client Repository
 
 ## Purpose
-This repository contains the code for **Nyte Client**, a Fabric mod targeting Minecraft 1.21. The project focuses on client-side performance and quality-of-life features that can be toggled in-game.
+This repository contains the code for **Nyte Client**, a Fabric mod targeting Minecraft 1.21. The project focuses on client-side movement, player, and render toggles for the author's own server/singleplayer use, controlled from an in-game ClickGUI.
+
+## Scope
+This is a personal QoL/movement toolkit, not anti-cheat-evasion tooling. Concretely:
+- Modules are simple, honest toggles (fly, hitbox, brightness, zoom, HUD) — not stealth features, not features designed to defeat a specific anti-cheat.
+- Don't add movement-speed hacks (e.g. removing the sneak slowdown), auto-clickers, killaura/aimbot-style combat automation, or timing exploits (e.g. lag-compensated combo automation). If asked to extend this project in that direction, treat it the same way `targetLock_MacePvP` is scoped: a personal practice tool, not something built to beat real anti-cheat on a server the user doesn't control.
+- `Flight` only works if the target server allows it (`allow-flight=true`) or the player already has flight — it doesn't and shouldn't try to defeat the server's own anti-fly check.
 
 ## Layout
-- `src/main/java` – Java source code.
+- `src/main/java/client` – entry point (`NyteClientMod`) and the shared `Theme` color palette (see `THEME.md`).
+- `src/main/java/client/modules` – one class per feature, all extending `ModuleBase`.
+- `src/main/java/client/gui` – `ClickGui`, the in-game panel UI.
+- `src/main/java/client/utils` – tick/keybind plumbing.
 - `src/main/resources` – resources such as `fabric.mod.json`.
 - `build.gradle`, `gradle.properties`, `settings.gradle` – Gradle build configuration (no wrapper script is included).
 
@@ -20,7 +29,8 @@ There are currently no automated tests, so a successful build verifies compilati
 - Keep line length under **120 characters**.
 - Include Javadoc comments for public classes and methods when adding new code.
 - Organize imports using your IDE's standard formatter.
-- Each module extending `ModuleBase` should implement `getName()` and handle enable/disable logic.
+- Each module extending `ModuleBase` should pass its name/description/category to the `super(...)` constructor and override `onEnable()`/`onDisable()`/`onTick()` as needed.
+- UI colors always come from `client.Theme` (see `THEME.md`) — never a hard-coded hex value in `ClickGui` or a module.
 
 ## Commit Messages
 - Use short, imperative sentences (e.g., `Add new HUD module`).

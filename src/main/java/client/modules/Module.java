@@ -1,20 +1,21 @@
-/**
- * Base interface for all feature modules.
- * Defines the methods required for module management.
- */
 package client.modules;
 
+/**
+ * Contract every feature module implements so {@link ModuleManager} and the
+ * ClickGUI can treat them uniformly regardless of what the module does.
+ */
 public interface Module {
-    /**
-     * @return human readable name for the module.
-     */
     String getName();
-    /**
-     * Toggles the module on or off.
-     */
-    void toggle();
-    /**
-     * @return true if the module is currently enabled.
-     */
+
+    /** Short blurb shown as a tooltip in the ClickGUI. */
+    String getDescription();
+
+    Category getCategory();
+
     boolean isEnabled();
+
+    void toggle();
+
+    /** Called once per client tick while the module is enabled. */
+    void onTick();
 }

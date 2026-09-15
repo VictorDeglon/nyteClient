@@ -1,54 +1,35 @@
-/**
- * Heads-up display module that prints the player's XYZ coordinates on screen.
- * Registers itself as a HUD render callback when enabled.
- */
 package client.modules;
 
+import client.Theme;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderTickCounter;
 
+/**
+ * Draws the player's XYZ position in the top-left corner while enabled.
+ *
+ * <p>Registers with {@link HudRenderCallback} once, in the constructor, and
+ * gates its own drawing on {@link #isEnabled()} -- Fabric's event bus has no
+ * unregister hook, so toggling has to happen inside the callback itself.
+ */
 public class CoordinatesHUD extends ModuleBase implements HudRenderCallback {
-    @Override
-    /**
-     * @return the name shown in the module list.
-     */
-    public String getName() {
-        return "Coordinates HUD";
-    }
-
-    @Override
-    /**
-     * Registers this instance to start rendering coordinates on the HUD.
-     */
-    protected void onEnable() {
-        // Subscribe to HUD render events
+    public CoordinatesHUD() {
+        super("Coordinates", "Shows your XYZ position on screen.", Category.RENDER);
         HudRenderCallback.EVENT.register(this);
     }
 
     @Override
-    /**
-     * Stops rendering coordinates on the HUD when disabled.
-     */
-    protected void onDisable() {
-        // Unsubscribe from HUD render events
-        HudRenderCallback.EVENT.unregister(this);
-    }
-
-    @Override
-    /**
-     * Draws the player's current coordinates each frame.
-     */
-    public void onHudRender(MatrixStack matrices, float tickDelta) {
-        // Skip rendering when the module is disabled
-        if (!isEnabled()) return;
-        // Acquire game client instance
+    public void onHudRender(DrawContext drawContext, RenderTickCounter tickCounter) {
+        if (!isEnabled()) {
+            return;
+        }
         MinecraftClient client = MinecraftClient.getInstance();
-        // Nothing to draw if the player doesn't exist
-        if (client.player == null) return;
-        // Build the XYZ string for display
-        String coords = String.format("XYZ: %d %d %d", (int) client.player.getX(), (int) client.player.getY(), (int) client.player.getZ());
-        // Render the coordinates on the screen
-        client.textRenderer.drawWithShadow(matrices, coords, 2, 2, 0xFFFFFF);
+        if (client.player == null) {
+            return;
+        }
+        String coords = String.format("XYZ: %d %d %d",
+                (int) client.player.getX(), (int) client.player.getY(), (int) client.player.getZ());
+        drawContext.drawTextWithShadow(client.textRenderer, coords, 4, 4, Theme.TEXT_PRIMARY);
     }
 }
