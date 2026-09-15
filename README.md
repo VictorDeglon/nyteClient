@@ -21,7 +21,12 @@ project's charter if you're extending this.
 | **FullBright** | Render | Maxes out gamma so dark areas look lit. |
 | **Zoom** | Render | Hold `C` to narrow the FOV, like a spyglass. |
 | **Xray** | Render | HUD radar listing nearby ores in *already-loaded* chunks — not a wallhack, doesn't need the seed. |
+| **Crosshair** | Render | Replaces the vanilla crosshair with a themed one (via a Mixin that suppresses `InGameHud`'s own crosshair render pass). |
 | **Coordinates** | Render | Draws your XYZ position in the top-left corner. |
+
+The ClickGUI header has a small swatch button (top-right) that cycles three
+color presets — Violet, Crimson, Teal — all defined in
+[`Theme.java`](src/main/java/client/Theme.java).
 
 `Speed`, `JumpBoost`, and `AirJump` work the same way `Flight` does: they
 only change what your own client reports, a server with real movement
@@ -60,6 +65,11 @@ Flight to actually work there instead of getting you kicked.
 - [`ModTickHandler`](src/main/java/client/utils/ModTickHandler.java) —
   registers the Fabric client-tick callback that drives `ModuleManager`
   and listens for the GUI-open keybind.
+- [`client.mixin.InGameHudMixin`](src/main/java/client/mixin/InGameHudMixin.java) —
+  the project's one Mixin so far, registered via
+  [`nyteclient.mixins.json`](src/main/resources/nyteclient.mixins.json).
+  Suppresses vanilla's crosshair render pass when `Crosshair` is enabled.
+  If you add another Mixin, list it in that same file's `"client"` array.
 
 ## Adding a new module
 

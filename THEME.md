@@ -6,6 +6,18 @@ module should hard-code a hex value — pull a constant from `Theme` instead.
 That's what keeps the panel, tabs, and HUD text looking like one coherent
 piece of UI, and it means a full re-theme is a one-file change.
 
+## Presets
+
+`Theme` ships three presets (`Theme.Preset`: `VIOLET`, `CRIMSON`, `TEAL`).
+Every `Theme.*` field below is a mutable static, reassigned by
+`Theme.apply(Preset)` — so existing call sites (`Theme.PANEL`,
+`Theme.ACCENT`, ...) never change, only the values they currently hold. The
+ClickGUI header's small swatch button in the top-right calls
+`Theme.cyclePreset()` on click. To add a fourth preset: add an enum
+constant to `Preset` and a matching `case` in `Theme.apply()` assigning all
+thirteen fields — the table below documents the `VIOLET` values; follow the
+same design rules for a new preset's palette.
+
 ## Format
 
 Every constant is a 32-bit ARGB int: `0xAARRGGBB`. The first byte is alpha
@@ -17,7 +29,7 @@ no conversion needed at the call site.
 
 | Token | Value | Swatch | Used for |
 |---|---|---|---|
-| `BACKGROUND` | `#C80D0B12` | near-black, ~78% opaque | Full-screen dim behind the panel |
+| `BACKGROUND` | `#F00D0B12` | near-black, ~94% opaque | Full-screen dim behind the panel |
 | `PANEL` | `#F0191622` | very dark violet-grey | Panel body, module list background |
 | `PANEL_HEADER` | `#FF241F30` | dark violet-grey | Header strip, hovered-row fill |
 | `BORDER` | `#33FFFFFF` | white, ~20% opaque | 1px panel outline |
@@ -49,6 +61,11 @@ no conversion needed at the call site.
 4. **No pure black/white.** Backgrounds lean dark-violet rather than `#000`,
    and text leans off-white rather than `#FFF`, which reads as less harsh
    against Minecraft's own lighting.
+5. **`BACKGROUND` stays close to opaque.** `ClickGui.shouldPause()` returns
+   `false` (the world keeps animating behind the panel, by design), so a
+   strongly translucent overlay lets that motion show through and reads as
+   a blur rather than a dim. Keep `BACKGROUND`'s alpha near `PANEL`'s
+   (`0xF0`) in any new preset.
 
 ## Changing the theme
 

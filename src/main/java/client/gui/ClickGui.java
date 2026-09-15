@@ -24,6 +24,8 @@ public class ClickGui extends Screen {
     private static final int TAB_WIDTH = 90;
     private static final int ROW_HEIGHT = 20;
     private static final int HEADER_HEIGHT = 18;
+    private static final int SWATCH_SIZE = 10;
+    private static final int SWATCH_MARGIN = 6;
 
     private Category selectedCategory = Category.MOVEMENT;
 
@@ -52,11 +54,30 @@ public class ClickGui extends Screen {
         // Header bar.
         context.fill(panelX, panelY, panelX + PANEL_WIDTH, panelY + HEADER_HEIGHT, Theme.PANEL_HEADER);
         context.drawTextWithShadow(textRenderer, "NYTE CLIENT", panelX + 8, panelY + 5, Theme.TEXT_PRIMARY);
+        renderThemeSwatch(context, panelX, panelY, mouseX, mouseY);
 
         renderTabs(context, panelX, rowsTop, mouseX, mouseY);
         renderModuleList(context, modules, listX, rowsTop, listWidth, mouseX, mouseY);
 
         super.render(context, mouseX, mouseY, delta);
+    }
+
+    /** Small clickable square in the header that cycles {@link Theme.Preset}. */
+    private void renderThemeSwatch(DrawContext context, int panelX, int panelY, int mouseX, int mouseY) {
+        int[] rect = themeSwatchRect(panelX, panelY);
+        boolean hovered = isHovering(mouseX, mouseY, rect[0], rect[1], SWATCH_SIZE, SWATCH_SIZE);
+        context.fill(rect[0], rect[1], rect[0] + SWATCH_SIZE, rect[1] + SWATCH_SIZE, Theme.ACCENT);
+        context.drawBorder(rect[0], rect[1], SWATCH_SIZE, SWATCH_SIZE, Theme.BORDER);
+        if (hovered) {
+            context.drawTooltip(textRenderer,
+                    Text.literal("Theme: " + Theme.getPreset().getLabel() + " (click to cycle)"), mouseX, mouseY);
+        }
+    }
+
+    private int[] themeSwatchRect(int panelX, int panelY) {
+        int x = panelX + PANEL_WIDTH - SWATCH_SIZE - SWATCH_MARGIN;
+        int y = panelY + (HEADER_HEIGHT - SWATCH_SIZE) / 2;
+        return new int[] {x, y};
     }
 
     private void renderTabs(DrawContext context, int tabX, int tabY, int mouseX, int mouseY) {
@@ -113,6 +134,12 @@ public class ClickGui extends Screen {
         int panelX = (width - PANEL_WIDTH) / 2;
         int panelY = (height - panelHeight) / 2;
         int rowsTop = panelY + HEADER_HEIGHT;
+
+        int[] swatch = themeSwatchRect(panelX, panelY);
+        if (isHovering(mouseX, mouseY, swatch[0], swatch[1], SWATCH_SIZE, SWATCH_SIZE)) {
+            Theme.cyclePreset();
+            return true;
+        }
 
         Category[] categories = Category.values();
         for (int i = 0; i < categories.length; i++) {

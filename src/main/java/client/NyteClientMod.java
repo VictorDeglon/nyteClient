@@ -10,6 +10,7 @@ import client.modules.Hitbox;
 import client.modules.FullBright;
 import client.modules.Zoom;
 import client.modules.Xray;
+import client.modules.Crosshair;
 import client.modules.CoordinatesHUD;
 import client.utils.ModTickHandler;
 
@@ -36,6 +37,7 @@ public class NyteClientMod implements ModInitializer {
         MODULES.register(new FullBright());
         MODULES.register(new Zoom());
         MODULES.register(new Xray());
+        MODULES.register(new Crosshair());
         MODULES.register(new CoordinatesHUD());
 
         ModTickHandler.init();
