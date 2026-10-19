@@ -5,3 +5,8 @@ out/
 *.iml
 .vscode/
 run/
+
+# Landing page tooling / Firebase
+node_modules/
+.firebase/
+firebase-debug.log
