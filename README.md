@@ -127,12 +127,32 @@ working with a clean `./gradlew build` against Temurin/Homebrew OpenJDK 21.
 
 ## Target Minecraft version
 
-`gradle.properties` currently targets **1.21**. If you're on a newer
-release, update `minecraft_version`, `yarn_mappings`, and `fabric_version`
-there to match — check [fabricmc.net](https://fabricmc.net/develop/) for
-current values, and confirm the exact `fabric_version` string exists at
-`https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/maven-metadata.xml`
-before building (a stale/guessed version was the first build failure here).
+`gradle.properties` currently targets **1.21** — this is very likely
+**stale**, not just "an older supported version." Minecraft moved off the
+`1.21.x` line entirely in 2026: releases are now numbered `YY.D.H` (year,
+drop, hotfix), the last `1.x` release was `1.21.11` (December 2025), and
+the current release as of writing is `26.2`. That's a bigger jump than a
+normal point-release bump:
+
+- **Yarn mappings are no longer maintained for `26.1`+.** Minecraft ships
+  unobfuscated with real parameter names now, so there's nothing for Yarn
+  to map. Targeting `26.x` means switching from
+  `mappings "net.fabricmc:yarn:..."` to Mojang's official mappings via
+  Loom, which is a mapping-system migration, not a version-string edit.
+- **Fabric API's names changed to match**, not backwards compatible with
+  Yarn-based code.
+- Every method/field name verified in this codebase so far (via the
+  decompiled classes in the Loom cache — see any module's Javadoc for
+  examples) was checked against **1.21**, not `26.x`. Some of those names
+  may no longer be correct on official mappings.
+
+If the actual test target is `26.x`: confirm the exact version first
+(main menu / launcher shows it), then treat this as a full toolchain
+migration — new Loom mapping config, re-verify every API call against the
+new mappings, current `fabric_version` from
+[fabricmc.net](https://fabricmc.net/develop/) — not a `gradle.properties`
+edit. Don't attempt this half-verified; it touches every file in
+`src/main/java`.
 
 ## Releasing
 
